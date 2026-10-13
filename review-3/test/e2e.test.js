@@ -1,6 +1,6 @@
 'use strict';
 // End-to-end API tests against the REAL MySQL database configured in .env (bank_db loaded from bank_review2.sql).
-// They add rows (new customer, account, loan, postings) - re-run `mysql -u root -p < bank_review2.sql` for a clean slate.
+// They add rows (new customer, account, loan, postings) - re-run `mysql -u root -p < db/bank_review2.sql` for a clean slate.
 const { test, before, after } = require('node:test');
 const assert = require('node:assert/strict');
 const app = require('../server');

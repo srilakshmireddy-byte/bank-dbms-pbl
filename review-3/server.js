@@ -64,7 +64,7 @@ async function start() {
     await query('SELECT 1 FROM v_branch_summary LIMIT 1');
   } catch (e) {
     console.error(`\nCannot use the database "${process.env.DB_NAME || 'bank_db'}": ${e.message}`);
-    console.error('Check DB_* values in .env and that you ran:  mysql -u root -p < bank_review2.sql\n');
+    console.error('Check DB_* values in .env and that you ran:  mysql -u root -p < db/bank_review2.sql\n');
     process.exit(1);
   }
   await ensureStaffTable();

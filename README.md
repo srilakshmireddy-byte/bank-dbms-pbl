@@ -14,20 +14,25 @@ A relational database system in MySQL 8, normalized to 3NF, for managing bank cu
 |---|---|
 | **Live demo** | [srilakshmireddy-byte.github.io/bank-dbms-pbl](https://srilakshmireddy-byte.github.io/bank-dbms-pbl/) (sample data runs in the browser) |
 | **Working prototype** | [`review-3/`](./review-3) |
+| **Final report** | [`report/Final_Report.pdf`](./report/Final_Report.pdf) |
+| **Video presentation (5 min)** | see [`video/VIDEO_LINK.md`](./video/VIDEO_LINK.md) |
 | **ER diagram** | [below](#er-diagram), and [`docs/er_diagram.png`](./docs/er_diagram.png) |
 
 ## Submission contents
 
 | Item | Location |
 |---|---|
-| Review 1 deck (HTML and PDF) | [`review-1/Project55_Review1_Deck.pdf`](./review-1/Project55_Review1_Deck.pdf), [`review-1/Project55_Review1_Deck.html`](./review-1/Project55_Review1_Deck.html) |
-| Review 1 report (DOCX) | [`review-1/Project55_Review1.docx`](./review-1/Project55_Review1.docx) |
-| Review 2 deck (HTML and PDF) | [`review-2/Project55_Review2_Deck.pdf`](./review-2/Project55_Review2_Deck.pdf), [`review-2/Project55_Review2_Deck.html`](./review-2/Project55_Review2_Deck.html) |
+| Review 1 deck (PDF) | [`review-1/Project55_Review1_Deck.pdf`](./review-1/Project55_Review1_Deck.pdf) |
+| Review 2 deck (PDF) | [`review-2/Project55_Review2_Deck.pdf`](./review-2/Project55_Review2_Deck.pdf) |
 | Normalization and data dictionary | [`review-2/Review2_Normalization_and_Data_Dictionary.md`](./review-2/Review2_Normalization_and_Data_Dictionary.md) |
 | SQL scripts (schema, triggers, data, views, queries) | [`review-2/sql/`](./review-2/sql) |
 | Validation tests | [`review-2/validation_tests.md`](./review-2/validation_tests.md) |
-| ER diagram | below, [`docs/er_diagram.png`](./docs/er_diagram.png) and the Review 1 version [`docs/er_diagram_review1.png`](./docs/er_diagram_review1.png) |
+| ER diagram | below, and [`docs/er_diagram.png`](./docs/er_diagram.png) |
 | Working prototype | [`review-3/`](./review-3) |
+| Final report (PDF, DOCX) | [`report/Final_Report.pdf`](./report/Final_Report.pdf), [`report/Final_Report.docx`](./report/Final_Report.docx) |
+| Video link document | [`video/VIDEO_LINK.md`](./video/VIDEO_LINK.md) |
+| HackerRank profile report | [`hackerrank/`](./hackerrank) |
+| LeetCode profile report | [`leetcode/`](./leetcode) |
 
 ## ER diagram
 
@@ -212,15 +217,18 @@ All captured from the running prototype and the live MySQL database (`review-3/s
 ## Repository layout
 
 ```
-review-1/   problem statement, scope, users and requirements, ER diagram, initial schema
-            (deck in HTML and PDF, report in DOCX)
-review-2/   normalization, data dictionary, DDL, triggers, sample data, queries (deck + sql/)
+review-1/   problem statement, scope, users and requirements, ER diagram, initial schema (deck PDF)
+review-2/   normalization, data dictionary, DDL, triggers, sample data, queries (deck PDF + sql/)
   sql/        01_schema.sql ... 05_queries.sql, queries_output.txt
 review-3/   the working prototype (Node.js + Express + MySQL back end, plain HTML/CSS/JS front end)
+  db/         bank_review2.sql (full database script)
   routes/ lib/ middleware/ public/ scripts/ test/ screenshots/
-docs/       ER diagrams
+report/     final report (PDF and DOCX)
+video/      link to the 5-minute video presentation
+hackerrank/ HackerRank profile report
+leetcode/   LeetCode profile report
+docs/       ER diagram
 .github/    GitHub Pages workflow that publishes the live demo
-.devcontainer/   GitHub Codespaces setup (app + MySQL)
 ```
 
 ## Design highlights
@@ -238,7 +246,7 @@ Requirements: MySQL 8 and Node.js 18 or newer.
 cd review-3
 
 # 1. Create the database (drops and recreates bank_db with the sample data)
-mysql -u root -p < bank_review2.sql
+mysql -u root -p < db/bank_review2.sql
 
 # 2. Install dependencies
 npm install
@@ -250,7 +258,7 @@ cp .env.example .env
 npm start
 ```
 
-Demo staff logins (Teller, Loan Officer, Manager), the API summary and the Codespaces option are in [`review-3/README.md`](./review-3/README.md). Run the tests with `npm test`.
+Demo staff logins (Teller, Loan Officer, Manager), the API summary are in [`review-3/README.md`](./review-3/README.md). Run the tests with `npm test`.
 
 ## Run the SQL on its own
 

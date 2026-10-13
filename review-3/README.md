@@ -1,9 +1,9 @@
 # Woxsen Co-operative Bank — Bank Account and Transaction Management System
 
-**Live demo:** <https://srilakshmireddy-byte.github.io/bank-dbms-pbl/> (runs entirely in your browser with the sample data; changes are not saved and reset when you reload). For the real Node + MySQL version, see [Run it online with GitHub Codespaces](#run-it-online-with-github-codespaces-no-installs) below.
+**Live demo:** <https://srilakshmireddy-byte.github.io/bank-dbms-pbl/> (runs entirely in your browser with the sample data; changes are not saved and reset when you reload). For the real Node + MySQL version, see the run steps below.
 
 DBMS course project: a Node.js + Express + MySQL 8 back end and a plain HTML/CSS/JS front end (no build step, no CDN).
-`bank_review2.sql` is used **unchanged** as the schema. Every business rule (positive amounts, sufficient balance,
+`db/bank_review2.sql` is used **unchanged** as the schema. Every business rule (positive amounts, sufficient balance,
 ACTIVE accounts only, balanced transfers) lives in the database triggers/procedures; the app only shows the
 database's own error message.
 
@@ -13,7 +13,7 @@ Requirements: Node.js 18+ and MySQL 8.
 
 ```bash
 # 1. Create the database (drops and recreates bank_db with the sample data)
-mysql -u root -p < bank_review2.sql
+mysql -u root -p < db/bank_review2.sql
 
 # 2. Install dependencies
 npm install
@@ -28,16 +28,6 @@ npm start
 Open the live demo: <https://srilakshmireddy-byte.github.io/bank-dbms-pbl/>
 
 **Edit `.env` yourself** (`DB_HOST`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`, `PORT`, `JWT_SECRET`). Never paste passwords into chat or commit `.env`.
-
-## Run it online with GitHub Codespaces (no installs)
-
-1. On the repository page, click **Code, Codespaces, Create codespace on main**.
-2. Wait a few minutes. The first start builds MySQL, loads `bank_review2.sql`, writes `.env` and starts the app.
-3. Open the **Ports** tab, find port **3000**, and open it in the browser.
-4. To share the link: right-click port 3000, choose **Port Visibility, Public**, and copy the address.
-
-The app only runs while the Codespace is running (it stops itself after a period of inactivity). Restart it from the
-Codespaces page, or run `cd review-3 && npm start` in the Codespace terminal. See `.devcontainer/` for the setup.
 
 ## Demo staff logins
 
@@ -96,7 +86,7 @@ npm test
 ```
 
 Runs 15 end-to-end tests against the real database in `.env` (auth, roles, every route, rule rejections, atomic rollback,
-parallel withdrawals, ledger invariant). The tests add rows; re-run `mysql -u root -p < bank_review2.sql` to restore the sample data.
+parallel withdrawals, ledger invariant). The tests add rows; re-run `mysql -u root -p < db/bank_review2.sql` to restore the sample data.
 
 ## Design notes and known behaviours
 
