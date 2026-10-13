@@ -28,6 +28,7 @@ A relational database system in MySQL 8, normalized to 3NF, for managing bank cu
 | SQL scripts (schema, triggers, data, views, queries) | [`review-2/sql/`](./review-2/sql) |
 | Validation tests | [`review-2/validation_tests.md`](./review-2/validation_tests.md) |
 | ER diagram | below, and [`docs/er_diagram.png`](./docs/er_diagram.png) |
+| Review 3 (final) deck (PDF) | [`review-3/Project55_Review3_Deck.pdf`](./review-3/Project55_Review3_Deck.pdf) |
 | Working prototype | [`review-3/`](./review-3) |
 | Final report (PDF, DOCX) | [`report/Final_Report.pdf`](./report/Final_Report.pdf), [`report/Final_Report.docx`](./report/Final_Report.docx) |
 | Video link document | [`video/VIDEO_LINK.md`](./video/VIDEO_LINK.md) |
@@ -220,7 +221,7 @@ All captured from the running prototype and the live MySQL database (`review-3/s
 review-1/   problem statement, scope, users and requirements, ER diagram, initial schema (deck PDF)
 review-2/   normalization, data dictionary, DDL, triggers, sample data, queries (deck PDF + sql/)
   sql/        01_schema.sql ... 05_queries.sql, queries_output.txt
-review-3/   the working prototype (Node.js + Express + MySQL back end, plain HTML/CSS/JS front end)
+review-3/   final deck PDF and the working prototype (Node.js + Express + MySQL back end, plain HTML/CSS/JS front end)
   db/         bank_review2.sql (full database script)
   routes/ lib/ middleware/ public/ scripts/ test/ screenshots/
 report/     final report (PDF and DOCX)
