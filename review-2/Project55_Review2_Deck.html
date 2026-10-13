@@ -1,0 +1,520 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Project 55 — Review 2</title>
+<style>
+  :root{
+    --bg:#ffffff;
+    --page:#faf5f7;
+    --ink:#17181c;
+    --muted:#6b6b72;
+    --pink:#d6336c;
+    --pink-deep:#a61e4d;
+    --pink-soft:#fdf1f5;
+    --pink-soft2:#f8d7e3;
+    --line:#ece0e5;
+    --serif:'Times New Roman', Times, serif;
+    --sans:'Times New Roman', Times, serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0; padding:0; width:100vw; height:100vh;
+    background:var(--page);
+    font-family:var(--sans);
+    color:var(--ink);
+    overflow:hidden;
+  }
+  :fullscreen{ background:var(--page); }
+  ::backdrop{ background:var(--page); }
+  .viewport{
+    position:fixed; inset:0;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .stage{
+    position:relative;
+    width:1280px; height:720px;
+    background:var(--bg);
+    border:1px solid var(--line);
+    box-shadow:0 30px 70px rgba(166,30,77,0.10);
+    transform-origin:center center;
+    overflow:hidden;
+    perspective:1800px;
+  }
+  .slide{
+    position:absolute; inset:0;
+    padding:64px 84px;
+    display:flex; flex-direction:column;
+    opacity:0;
+    pointer-events:none;
+    z-index:1;
+    background:var(--bg);
+  }
+  .slide.active{
+    opacity:1;
+    pointer-events:auto;
+    z-index:2;
+  }
+
+  /* ===== Cycling slide transitions: Rise / Wipe / Zoom / Flip / Curtain ===== */
+  @keyframes rise-enter{ from{ transform:translateY(72px) skewY(3deg); opacity:0; } to{ transform:translateY(0) skewY(0deg); opacity:1; } }
+  @keyframes rise-leave{ from{ transform:translateY(0) skewY(0deg); opacity:1; } to{ transform:translateY(-72px) skewY(-3deg); opacity:0; } }
+
+  @keyframes wipe-enter{ from{ clip-path:inset(0 100% 0 0); } to{ clip-path:inset(0 0% 0 0); } }
+  @keyframes wipe-leave{ from{ clip-path:inset(0 0% 0 0); } to{ clip-path:inset(0 0% 0 0); } }
+
+  @keyframes zoom-enter{ from{ transform:scale(1.22); opacity:0; } to{ transform:scale(1); opacity:1; } }
+  @keyframes zoom-leave{ from{ transform:scale(1); opacity:1; } to{ transform:scale(0.82); opacity:0; } }
+
+  @keyframes flip-enter{ from{ transform:rotateY(90deg); opacity:0; } to{ transform:rotateY(0deg); opacity:1; } }
+  @keyframes flip-leave{ from{ transform:rotateY(0deg); opacity:1; } to{ transform:rotateY(-90deg); opacity:0; } }
+
+  @keyframes curtain-enter{ from{ clip-path:circle(0% at 50% 50%); } to{ clip-path:circle(150% at 50% 50%); } }
+  @keyframes curtain-leave{ from{ clip-path:circle(150% at 50% 50%); } to{ clip-path:circle(150% at 50% 50%); } }
+
+  .tr-rise-enter{ animation:rise-enter 650ms cubic-bezier(0.22,1,0.36,1) both; }
+  .tr-rise-leave{ animation:rise-leave 650ms cubic-bezier(0.22,1,0.36,1) both; }
+  .tr-wipe-enter{ animation:wipe-enter 620ms cubic-bezier(0.65,0,0.35,1) both; }
+  .tr-wipe-leave{ animation:wipe-leave 620ms linear both; }
+  .tr-zoom-enter{ animation:zoom-enter 600ms cubic-bezier(0.22,1,0.36,1) both; }
+  .tr-zoom-leave{ animation:zoom-leave 600ms cubic-bezier(0.22,1,0.36,1) both; }
+  .tr-flip-enter{ animation:flip-enter 700ms cubic-bezier(0.65,0,0.35,1) both; transform-origin:left center; backface-visibility:hidden; }
+  .tr-flip-leave{ animation:flip-leave 700ms cubic-bezier(0.65,0,0.35,1) both; transform-origin:right center; backface-visibility:hidden; }
+  .tr-curtain-enter{ animation:curtain-enter 700ms cubic-bezier(0.65,0,0.35,1) both; }
+  .tr-curtain-leave{ animation:curtain-leave 700ms linear both; }
+
+  .tr-rise-enter.reverse,.tr-rise-leave.reverse,
+  .tr-wipe-enter.reverse,.tr-wipe-leave.reverse,
+  .tr-zoom-enter.reverse,.tr-zoom-leave.reverse,
+  .tr-flip-enter.reverse,.tr-flip-leave.reverse,
+  .tr-curtain-enter.reverse,.tr-curtain-leave.reverse{
+    animation-direction:reverse;
+  }
+
+  /* ---- Typography helpers ---- */
+  .eyebrow{
+    font-family:var(--sans); font-weight:600; font-size:13.5px;
+    letter-spacing:.03em; color:var(--pink); margin:0 0 14px 0;
+  }
+  h1.deck-title{
+    font-family:var(--serif); font-weight:600; font-size:40px;
+    line-height:1.18; color:var(--ink); margin:0 0 18px 0; max-width:920px;
+  }
+  h2.slide-title{
+    font-family:var(--serif); font-weight:600; font-size:29px;
+    color:var(--ink); margin:0 0 6px 0;
+    display:inline-block;
+    position:relative;
+    padding-bottom:10px;
+  }
+  h2.slide-title::after{
+    content:""; position:absolute; left:0; bottom:0;
+    width:56px; height:2.5px; background:var(--pink);
+    transform:scaleX(0); transform-origin:left;
+  }
+  .slide.active h2.slide-title::after{
+    animation:drawline .6s cubic-bezier(0.22,1,0.36,1) .15s forwards;
+  }
+  @keyframes drawline{ to{ transform:scaleX(1); } }
+  .slide-kicker{
+    font-family:var(--sans); font-weight:600; font-size:12.5px;
+    color:var(--muted); letter-spacing:.02em; margin:0 0 8px 0;
+  }
+  .slide-head{ margin-bottom:28px; }
+  p{ font-family:var(--sans); font-size:16px; line-height:1.6; color:var(--ink); }
+  .muted{ color:var(--muted); }
+
+  /* ---- Slide number badge ---- */
+  .slide-index{
+    position:absolute; top:30px; right:40px;
+    font-family:var(--sans); font-size:12.5px; color:var(--muted);
+    letter-spacing:.02em;
+  }
+
+  /* ================= SLIDE 1 — TITLE ================= */
+  #s1{ align-items:flex-start; justify-content:center; }
+  #s1 .title-mark{
+    width:46px; height:46px; border-radius:11px;
+    background:var(--pink); margin-bottom:34px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  #s1 .title-mark span{ color:#fff; font-family:var(--serif); font-weight:600; font-size:20px; }
+  #s1 .subtitle{ font-family:var(--sans); font-size:17px; color:var(--muted); margin:0 0 56px 0; }
+  #s1 .meta-row{ display:flex; gap:64px; }
+  #s1 .meta-item .meta-label{
+    font-size:12px; font-weight:600; color:var(--pink); letter-spacing:.03em; margin-bottom:6px;
+  }
+  #s1 .meta-item .meta-value{ font-family:var(--serif); font-size:18px; color:var(--ink); }
+
+  /* ================= SHARED TWO-COLUMN TEXT SLIDES ================= */
+  .two-col{ display:flex; gap:56px; flex:1; align-items:center; }
+  .two-col .col{ flex:1; }
+  ul.bullets{ margin:0; padding:0; list-style:none; }
+  ul.bullets li{
+    position:relative; padding-left:22px; margin-bottom:14px;
+    font-size:15px; line-height:1.55; color:var(--ink);
+  }
+  ul.bullets li::before{
+    content:""; position:absolute; left:0; top:8px;
+    width:7px; height:7px; border-radius:50%; background:var(--pink);
+  }
+  ol.numbers{ margin:0; padding:0; list-style:none; counter-reset:item; }
+  ol.numbers li{
+    counter-increment:item; position:relative; padding-left:28px; margin-bottom:13px;
+    font-size:14.5px; line-height:1.5; color:var(--ink);
+  }
+  ol.numbers li::before{
+    content:counter(item) "."; position:absolute; left:0; top:0;
+    color:var(--pink); font-weight:600; font-family:var(--sans); font-size:14px;
+  }
+  .out-of-scope{ margin-top:18px; font-size:13px; color:var(--muted); font-style:italic; }
+
+  /* ================= SLIDE 2 — PROBLEM ================= */
+  #s2 .quote-card{
+    background:var(--pink-soft); border:1px solid var(--pink-soft2);
+    border-radius:6px; padding:32px; margin-top:6px;
+  }
+  #s2 .quote-card p{
+    font-family:var(--serif); font-style:italic; font-size:19px;
+    line-height:1.55; color:var(--ink); margin:0;
+  }
+
+  /* ================= SLIDE 4 (old roles table, now unused) ================= */
+
+  /* ================= SLIDE 5 — ERD ================= */
+  #s5 .erd-caption{
+    font-size:12px; color:var(--muted); margin:0 0 14px 0;
+  }
+  #s5 .erd-caption b{ color:var(--pink-deep); }
+  #s5 .erd-full{ flex:1; display:flex; align-items:center; justify-content:center; min-height:0; }
+  #s5 .erd-full img{ max-width:100%; max-height:100%; height:100%; width:auto; object-fit:contain; }
+
+  /* ================= SLIDE 6 — SCHEMA ================= */
+  #s6 .schema-cols{ display:flex; gap:22px; flex:1; align-items:center; }
+  #s6 .schema-col{ flex:1; }
+  table.schema{ width:100%; border-collapse:collapse; }
+  table.schema th{
+    text-align:left; font-size:10.5px; font-weight:600; color:var(--pink-deep);
+    padding:6px 8px; border-bottom:2px solid var(--pink-soft2); background:var(--pink-soft);
+  }
+  table.schema td{
+    font-size:10.8px; padding:7px 8px; border-bottom:1px solid var(--line); color:var(--ink);
+  }
+  table.schema td.tname{ font-weight:600; }
+
+  /* ================= SLIDE 7 — THANK YOU ================= */
+  #s7{ align-items:center; justify-content:center; text-align:center; }
+  #s7 h1{
+    font-family:var(--serif); font-weight:600; font-size:56px; color:var(--ink); margin:0 0 14px 0;
+  }
+  #s7 p{ font-size:17px; color:var(--muted); margin:0; }
+  #s7 .rule{ width:56px; height:2.5px; background:var(--pink); margin:26px auto; }
+  #s7 .footnote{ margin-top:60px; font-size:12.5px; color:var(--muted); }
+
+  /* ---- Navigation ---- */
+  .nav-zone{
+    position:absolute; top:0; bottom:0; width:12%;
+    display:flex; align-items:center; z-index:5; cursor:pointer;
+    opacity:0; transition:opacity .2s ease;
+  }
+  .nav-zone:hover{ opacity:1; }
+  .nav-zone.left{ left:0; justify-content:flex-start; padding-left:14px; }
+  .nav-zone.right{ right:0; justify-content:flex-end; padding-right:14px; }
+  .nav-zone svg{ width:26px; height:26px; }
+  .nav-zone.left svg{ color:var(--pink-deep); }
+  .nav-zone.right svg{ color:var(--pink-deep); }
+
+  .bottom-bar{
+    position:fixed; left:50%; bottom:26px; transform:translateX(-50%);
+    display:flex; align-items:center; gap:14px;
+    padding:9px 16px; border-radius:999px;
+    background:rgba(255,255,255,0.9); box-shadow:0 6px 20px rgba(166,30,77,0.12);
+    z-index:10; backdrop-filter:blur(4px);
+  }
+  .dots{ display:flex; gap:10px; }
+  .dot-btn{
+    width:8px; height:8px; border-radius:50%; background:var(--pink-soft2);
+    border:none; cursor:pointer; padding:0; transition:background .2s ease, transform .2s ease;
+  }
+  .dot-btn.active{ background:var(--pink); transform:scale(1.3); }
+  .bar-divider{ width:1px; height:16px; background:var(--line); }
+
+  .hint{
+    position:fixed; bottom:78px; left:50%; transform:translateX(-50%);
+    font-family:var(--sans); font-size:12px; color:var(--muted);
+    background:rgba(255,255,255,0.9); padding:6px 14px; border-radius:999px;
+    box-shadow:0 4px 14px rgba(0,0,0,0.05); z-index:10;
+    opacity:1; transition:opacity .6s ease;
+  }
+  .hint.hidden{ opacity:0; pointer-events:none; }
+
+  .fullscreen-btn{
+    width:26px; height:26px; border-radius:50%; border:none; cursor:pointer;
+    background:transparent; display:flex; align-items:center; justify-content:center;
+    transition:transform .2s ease;
+  }
+  .fullscreen-btn:hover{ transform:scale(1.1); }
+  .fullscreen-btn svg{ width:15px; height:15px; color:var(--pink-deep); }
+  .fullscreen-btn .icon-exit{ display:none; }
+  .fullscreen-btn.is-fullscreen .icon-enter{ display:none; }
+  .fullscreen-btn.is-fullscreen .icon-exit{ display:block; }
+
+  /* ===== Review 2 additions ===== */
+  .slide{ padding:52px 70px 70px; }
+  .slide-head{ margin-bottom:16px; }
+  table.dd{ width:100%; border-collapse:collapse; }
+  table.dd th{ text-align:left; font-size:13px; font-weight:600; color:var(--pink-deep); padding:5px 7px; border-bottom:2px solid var(--pink-soft2); background:var(--pink-soft); }
+  table.dd td{ font-size:13px; padding:8px 9px; border-bottom:1px solid var(--line); vertical-align:top; line-height:1.35; }
+  table.dd td.tname{ font-weight:600; color:var(--pink-deep); white-space:nowrap; }
+  table.res{ border-collapse:collapse; width:100%; }
+  table.res th{ text-align:left; font-size:11.5px; font-weight:600; color:var(--pink-deep); padding:4px 6px; background:var(--pink-soft); border-bottom:2px solid var(--pink-soft2); white-space:nowrap; }
+  table.res td{ font-size:12px; padding:5px 7px; border-bottom:1px solid var(--line); white-space:nowrap; }
+  pre.sql{ margin:0 0 10px 0; background:#fbf6f8; border:1px solid var(--pink-soft2); border-left:3px solid var(--pink); border-radius:4px; padding:10px 12px; font-family:'Courier New',monospace; font-size:11.5px; line-height:1.45; color:#2a2a30; white-space:pre-wrap; }
+  .tag{ display:inline-block; font-size:12.5px; font-weight:600; color:var(--pink-deep); background:var(--pink-soft); border:1px solid var(--pink-soft2); border-radius:999px; padding:2px 10px; margin-bottom:8px; }
+  .grid2{ display:flex; gap:26px; flex:1; min-height:0; }
+  .grid2 > div{ flex:1; min-width:0; }
+  .flow{ display:flex; align-items:stretch; gap:0; margin-top:6px; }
+  .flow .box{ flex:1; background:var(--pink-soft); border:1px solid var(--pink-soft2); border-radius:8px; padding:14px 14px; }
+  .flow .box h4{ margin:0 0 8px; font-size:18px; color:var(--pink-deep); }
+  .flow .box p{ margin:0; font-size:14px; line-height:1.45; }
+  .flow .box.hl{ background:var(--pink); border-color:var(--pink); } .flow .box.hl h4,.flow .box.hl p{ color:#fff; }
+  .flow .arrow{ width:34px; display:flex; align-items:center; justify-content:center; color:var(--pink); font-size:22px; }
+  .stat-row{ display:flex; gap:14px; margin:6px 0 14px; }
+  .stat{ flex:1; background:var(--pink-soft); border:1px solid var(--pink-soft2); border-radius:8px; padding:12px; text-align:center; }
+  .stat b{ display:block; font-size:30px; color:var(--pink-deep); font-weight:600; } .stat span{ font-size:13.5px; color:var(--muted); }
+  .err{ background:#fff; border:1px solid var(--pink-soft2); border-left:3px solid var(--pink); border-radius:4px; padding:12px 14px; margin-bottom:12px; }
+  .err code{ font-family:'Courier New',monospace; font-size:11.5px; display:block; color:#2a2a30; }
+  .err em{ font-style:normal; font-size:13.5px; color:var(--pink-deep); font-weight:600; }
+  .note{ font-size:13px; color:var(--muted); margin:6px 0 0; line-height:1.45; }
+  ul.bullets li{ font-size:16.5px; margin-bottom:14px; } .slide-kicker{ font-size:14px !important; }
+
+</style></head><body><div class="viewport"><div class="stage" id="stage">
+<section class="slide active" id="s1"><div class="title-mark"><span>B</span></div>
+<p class="eyebrow">Academic Project Review 2</p>
+<h1 class="deck-title">Design and Implementation of a Database Management System for Bank Account and Transaction Management System</h1>
+<p class="subtitle">Project 55 &nbsp;·&nbsp; Normalized Design, SQL Implementation &amp; Database Prototype</p>
+<div class="meta-row"><div class="meta-item"><div class="meta-label">Presented by</div><div class="meta-value">M.Srilakshmi Reddy</div></div>
+<div class="meta-item"><div class="meta-label">Course</div><div class="meta-value">AI-ML</div></div>
+<div class="meta-item"><div class="meta-label">Academic Year</div><div class="meta-value">2026</div></div></div></section>
+<section class="slide" id="s2"><div class="slide-index">02 / 16</div><div class="slide-head"><h2 class="slide-title">Review 2 — What Has Been Completed</h2></div>
+<div class="stat-row"><div class="stat"><b>14</b><span>Tables in 3NF</span></div><div class="stat"><b>3</b><span>Triggers</span></div><div class="stat"><b>2</b><span>Stored procedures</span></div><div class="stat"><b>7</b><span>Reporting views</span></div><div class="stat"><b>54</b><span>Ledger transactions</span></div></div>
+<div class="grid2"><div><p class="slide-kicker">Review 1 → Review 2</p>
+<ul class="bullets"><li>Review 1 ER diagram and initial schema converted to a <strong>normalized 3NF design</strong> with functional dependencies.</li>
+<li>Complete <strong>DDL script</strong> with PK, FK, UNIQUE, CHECK, ENUM and DEFAULT constraints.</li>
+<li>Business rules enforced inside the database by <strong>triggers and stored procedures</strong>.</li></ul></div>
+<div><p class="slide-kicker">Evidence in this review</p>
+<ul class="bullets"><li>Sample data for 10 customers, 11 accounts, 8 transfers and 3 loans.</li>
+<li>Queries using <strong>joins, subqueries, aggregation and views</strong> — all executed, outputs shown.</li>
+<li>Rule-violation tests showing the database <strong>rejecting</strong> invalid operations.</li></ul></div></div></section>
+<section class="slide" id="s3"><div class="slide-index">03 / 16</div><div class="slide-head"><h2 class="slide-title">Normalization Process — UNF to 3NF</h2></div>
+<div class="flow">
+<div class="box"><h4>UNF</h4><p>One bank sheet: customer, branch, account, joint holders, many transactions and loan instalments repeated in a single record.</p></div><div class="arrow">›</div>
+<div class="box"><h4>1NF</h4><p>Atomic values; repeating groups (holders, transactions, instalments) moved to their own rows. Primary key added.</p></div><div class="arrow">›</div>
+<div class="box"><h4>2NF</h4><p>Partial dependencies removed. Branch and type data split from ACCOUNT; ACCOUNT_HOLDER resolves the M:N of joint accounts.</p></div><div class="arrow">›</div>
+<div class="box hl"><h4>3NF</h4><p>No transitive dependencies. Subtypes (TRANSFER, SERVICE_CHARGE, LOAN_REPAYMENT) hang off TRANSACTION; REPAYMENT allocates payments to schedule rows.</p></div></div>
+<div class="grid2" style="margin-top:20px"><div><p class="slide-kicker">Example of a removed anomaly</p>
+<ul class="bullets"><li><strong>Before:</strong> account row stored branch name, city and manager — changing a manager meant editing every account.</li>
+<li><strong>After:</strong> ACCOUNT stores only <em>branch_id</em>; BRANCH holds the details once.</li></ul></div>
+<div><p class="slide-kicker">Result</p>
+<ul class="bullets"><li>No update, insert or delete anomalies.</li>
+<li>Every non-key attribute depends on <strong>the key, the whole key, and nothing but the key</strong>.</li></ul></div></div></section>
+<section class="slide" id="s4"><div class="slide-index">04 / 16</div><div class="slide-head"><h2 class="slide-title">Functional Dependencies</h2></div><table class="dd"><tr><th>Relation</th><th>Functional dependencies (determinant → dependents)</th></tr><tr><td class="tname">BRANCH</td><td>branch_id → branch_name, address, city, phone, branch_manager</td></tr><tr><td class="tname">ACCOUNT_TYPE</td><td>type_id → type_name, description, min_balance, is_interest_bearing</td></tr><tr><td class="tname">CUSTOMER</td><td>customer_id → full_name, date_of_birth, email, phone, address, id_proof</td></tr><tr><td class="tname">ACCOUNT</td><td>account_id → account_number, type_id, branch_id, status, open_date, balance;  account_number → account_id</td></tr><tr><td class="tname">ACCOUNT_HOLDER</td><td>(account_id, customer_id) → holder_type, since_date</td></tr><tr><td class="tname">TRANSACTION</td><td>transaction_id → account_id, transaction_type, amount, transaction_date, description, balance_after</td></tr><tr><td class="tname">TRANSFER</td><td>transfer_id → debit_transaction_id, credit_transaction_id, remarks</td></tr><tr><td class="tname">SERVICE_CHARGE</td><td>charge_id → transaction_id, charge_type</td></tr><tr><td class="tname">BENEFICIARY</td><td>beneficiary_id → customer_id, beneficiary_name, account_number, bank_name, ifsc_code, type, created_at</td></tr><tr><td class="tname">STATEMENT</td><td>statement_id → account_id, from_date, to_date, generated_date</td></tr><tr><td class="tname">LOAN</td><td>loan_id → customer_id, account_id, loan_type, amount, interest_rate, start_date, end_date, status</td></tr><tr><td class="tname">LOAN_SCHEDULE</td><td>schedule_id → loan_id, due_date, due_amount, status;  (loan_id, due_date) → schedule_id</td></tr><tr><td class="tname">LOAN_REPAYMENT</td><td>repayment_id → transaction_id, loan_id</td></tr><tr><td class="tname">REPAYMENT</td><td>repayment_id → schedule_id, transaction_id, amount, status</td></tr></table><p class="note">Every determinant is a candidate key (or superkey) of its relation, so each table satisfies BCNF as well as 3NF. Derived columns <em>account.balance</em> and <em>transaction.balance_after</em> are deliberate, trigger-maintained redundancy for fast statements.</p></section>
+<section class="slide" id="s5"><div class="slide-index">05 / 16</div><div class="slide-head"><h2 class="slide-title">Changes from Review 1 Schema to 3NF</h2></div>
+<div class="grid2"><div><p class="slide-kicker">Design decisions</p>
+<ul class="bullets">
+<li><strong>TRANSFER</strong> stores two references — debit and credit transaction — so every transfer is balanced by construction; amount is read from the ledger, not duplicated.</li>
+<li><strong>REPAYMENT</strong> allocates a payment transaction to a LOAN_SCHEDULE instalment, so outstanding = scheduled − allocated.</li>
+<li><strong>Customer / branch / type details</strong> kept in a single place and referenced by key.</li>
+<li><strong>ACCOUNT_HOLDER</strong> resolves the many-to-many between customers and joint accounts.</li></ul></div>
+<div><p class="slide-kicker">Controlled redundancy</p>
+<ul class="bullets">
+<li><em>account.balance</em> and <em>transaction.balance_after</em> are computed by the BEFORE/AFTER INSERT triggers — never typed by users.</li>
+<li>Audit query confirms zero mismatches between the stored balance and the last ledger entry.</li>
+<li>Money columns use <strong>DECIMAL(15,2)</strong>, never floating point.</li></ul>
+<p class="note">All 14 entities from the Review 1 ER diagram are retained — the ER diagram is unchanged.</p></div></div></section>
+<section class="slide" id="s6"><div class="slide-index">06 / 16</div><div class="slide-head"><h2 class="slide-title">Data Dictionary — Customers &amp; Accounts</h2></div><table class="dd"><tr><th>Table</th><th>Columns and constraints</th><th>Purpose</th></tr><tr><td class="tname">BRANCH</td><td>branch_id (PK), branch_name, address, city, phone, branch_manager</td><td>Bank branch details</td></tr><tr><td class="tname">ACCOUNT_TYPE</td><td>type_id (PK), type_name (UQ), min_balance ≥ 0, is_interest_bearing</td><td>Savings / Current / Salary / FD rules</td></tr><tr><td class="tname">CUSTOMER</td><td>customer_id (PK), full_name, date_of_birth, email (UQ), phone, id_proof (UQ)</td><td>Customer profile</td></tr><tr><td class="tname">ACCOUNT</td><td>account_id (PK), account_number (UQ), type_id FK, branch_id FK, status ENUM(ACTIVE, DORMANT, FROZEN, CLOSED), open_date, balance CHECK ≥ 0</td><td>Bank account</td></tr><tr><td class="tname">ACCOUNT_HOLDER</td><td>(account_id, customer_id) PK, holder_type ENUM(PRIMARY, JOINT), since_date</td><td>Joint-holder link</td></tr><tr><td class="tname">BENEFICIARY</td><td>beneficiary_id (PK), customer_id FK, beneficiary_name, account_number, bank_name, ifsc_code, type ENUM(INTERNAL, EXTERNAL)</td><td>Saved payees</td></tr><tr><td class="tname">STATEMENT</td><td>statement_id (PK), account_id FK, from_date, to_date, generated_date, CHECK to_date ≥ from_date</td><td>Statement log</td></tr></table></section>
+<section class="slide" id="s7"><div class="slide-index">07 / 16</div><div class="slide-head"><h2 class="slide-title">Data Dictionary — Transactions &amp; Loans</h2></div><table class="dd"><tr><th>Table</th><th>Columns and constraints</th><th>Purpose</th></tr><tr><td class="tname">TRANSACTION</td><td>transaction_id (PK), account_id FK, transaction_type ENUM(7 types), amount CHECK &gt; 0, transaction_date, description, balance_after</td><td>Single ledger of all money movement</td></tr><tr><td class="tname">TRANSFER</td><td>transfer_id (PK), debit_transaction_id FK (UQ), credit_transaction_id FK (UQ), remarks</td><td>Links the two legs of a transfer</td></tr><tr><td class="tname">SERVICE_CHARGE</td><td>charge_id (PK), transaction_id FK (UQ), charge_type ENUM(ATM_FEE, SMS_ALERT, ANNUAL_MAINTENANCE, …)</td><td>Fee details</td></tr><tr><td class="tname">LOAN</td><td>loan_id (PK), customer_id FK, account_id FK, loan_type, amount CHECK &gt; 0, interest_rate, start_date, end_date, status</td><td>Loan master</td></tr><tr><td class="tname">LOAN_SCHEDULE</td><td>schedule_id (PK), loan_id FK, due_date, due_amount CHECK &gt; 0, status ENUM(PENDING, PAID, OVERDUE), UQ(loan_id, due_date)</td><td>EMI schedule</td></tr><tr><td class="tname">LOAN_REPAYMENT</td><td>repayment_id (PK), transaction_id FK (UQ), loan_id FK</td><td>Repayment transaction subtype</td></tr><tr><td class="tname">REPAYMENT</td><td>repayment_id (PK), schedule_id FK, transaction_id FK, amount CHECK &gt; 0, status</td><td>Allocates a payment to an instalment</td></tr></table></section>
+<section class="slide" id="s8"><div class="slide-index">08 / 16</div><div class="slide-head"><h2 class="slide-title">Integrity Constraints — Business Rules Enforced</h2></div><table class="dd"><tr><th>Business rule</th><th>How it is enforced in MySQL</th><th>Mechanism</th></tr><tr><td class="tname">Unique account / transaction IDs</td><td>PRIMARY KEY AUTO_INCREMENT on every ID; UNIQUE on account_number, email, id_proof</td><td>Constraint</td></tr><tr><td class="tname">Sufficient balance</td><td>trg_txn_before_insert rejects a debit if balance − amount &lt; account type minimum balance</td><td>Trigger</td></tr><tr><td class="tname">Balanced debit / credit</td><td>sp_transfer posts both legs in one transaction; trg_transfer_before_insert checks equal amounts; v_transfers shows <em>balanced</em></td><td>Procedure + trigger</td></tr><tr><td class="tname">Active-account requirement</td><td>trigger rejects any posting to DORMANT, FROZEN or CLOSED accounts</td><td>Trigger</td></tr><tr><td class="tname">Positive amounts</td><td>CHECK (amount &gt; 0) on transaction, loan, schedule, repayment, plus trigger message</td><td>CHECK</td></tr><tr><td class="tname">Automatic balances</td><td>trg_txn_after_insert updates account.balance; balance_after stored per entry</td><td>Trigger</td></tr><tr><td class="tname">Atomic operations</td><td>sp_transfer and sp_loan_repayment use START TRANSACTION with EXIT HANDLER + ROLLBACK</td><td>Procedure</td></tr></table></section>
+<section class="slide" id="s9"><div class="slide-index">09 / 16</div><div class="slide-head"><h2 class="slide-title">Transaction Posting Flow — Enforced in the Database</h2></div>
+<div class="flow">
+<div class="box"><h4>1. Request</h4><p>INSERT into TRANSACTION, or CALL sp_transfer / sp_loan_repayment.</p></div><div class="arrow">›</div>
+<div class="box"><h4>2. Validate</h4><p>BEFORE INSERT trigger checks: amount &gt; 0, account exists, status ACTIVE.</p></div><div class="arrow">›</div>
+<div class="box"><h4>3. Balance check</h4><p>Credit: new = balance + amount. Debit: new = balance − amount must be ≥ minimum balance.</p></div><div class="arrow">›</div>
+<div class="box hl"><h4>4. Post</h4><p>balance_after stored; AFTER trigger updates ACCOUNT.balance.</p></div></div>
+<div class="grid2" style="margin-top:24px"><div><p class="slide-kicker">Transfer = one atomic unit</p>
+<ul class="bullets"><li>Debit leg on the source account and credit leg on the destination are inserted inside one transaction.</li>
+<li>If either leg fails, <strong>ROLLBACK</strong> undoes both — money is never created or lost.</li></ul></div>
+<div><p class="slide-kicker">Loan repayment</p>
+<ul class="bullets"><li>EMI is debited from the loan account and linked to the matching schedule row.</li>
+<li>When the instalment is fully paid its status becomes PAID automatically.</li></ul></div></div></section>
+<section class="slide" id="s10"><div class="slide-index">10 / 16</div><div class="slide-head"><h2 class="slide-title">Sample Data &amp; Implementation Progress</h2></div><div class="grid2"><div><table class="res"><tr><th>Table</th><th>Rows</th></tr><tr><td>branch</td><td>4</td></tr><tr><td>customer</td><td>10</td></tr><tr><td>account</td><td>11</td></tr><tr><td>holders</td><td>12</td></tr><tr><td>transaction</td><td>54</td></tr><tr><td>transfer</td><td>8</td></tr><tr><td>loan</td><td>3</td></tr><tr><td>schedule rows</td><td>27</td></tr><tr><td>repayments</td><td>8</td></tr></table><p class="note">Row counts read live from bank_db after running bank_review2.sql.</p></div><div><p class="slide-kicker">Implementation status</p><ul class="bullets"><li><strong>Done:</strong> schema, constraints, indexes, triggers, procedures, sample data, views, queries, tests.</li><li>Four branches, ten customers (one joint account), four account types, accounts in ACTIVE, FROZEN and CLOSED states.</li><li>Loans: personal, vehicle and education, with EMI schedules generated by the standard formula.</li><li><strong>Verified:</strong> every account balance equals its last ledger balance.</li><li><strong>Remaining (Review 3):</strong> front-end application, final report, viva demo.</li></ul></div></div></section>
+<section class="slide" id="s11"><div class="slide-index">11 / 16</div><div class="slide-head"><h2 class="slide-title">Queries — Joins &amp; Subqueries</h2></div><div class="grid2"><div><span class="tag">JOIN — account statement</span><pre class="sql">SELECT t.transaction_id, t.transaction_date, t.transaction_type, t.amount, t.balance_after
+FROM `transaction` t JOIN account a ON a.account_id=t.account_id
+WHERE a.account_number=&#x27;50010000001001&#x27;
+ORDER BY t.transaction_id LIMIT 6;</pre><table class="res"><tr><th>transaction_id</th><th>transaction_date</th><th>transaction_type</th><th>amount</th><th>balance_after</th></tr><tr><td>1</td><td>2026-07-01 10:15:00</td><td>DEPOSIT</td><td>50000.00</td><td>50000.00</td></tr><tr><td>11</td><td>2026-07-10 17:05:00</td><td>WITHDRAWAL</td><td>8000.00</td><td>42000.00</td></tr><tr><td>20</td><td>2026-08-18 10:10:00</td><td>DEPOSIT</td><td>22000.00</td><td>64000.00</td></tr><tr><td>24</td><td>2026-07-20 10:00:00</td><td>TRANSFER_DEBIT</td><td>5000.00</td><td>59000.00</td></tr><tr><td>31</td><td>2026-08-14 16:10:00</td><td>TRANSFER_CREDIT</td><td>6000.00</td><td>65000.00</td></tr><tr><td>37</td><td>2026-09-05 09:30:00</td><td>TRANSFER_CREDIT</td><td>10000.00</td><td>75000.00</td></tr></table></div><div><span class="tag">SUBQUERY — above-average balance</span><pre class="sql">SELECT account_number, balance FROM account
+WHERE balance &gt; (SELECT AVG(balance) FROM account WHERE status=&#x27;ACTIVE&#x27;)
+ORDER BY balance DESC;</pre><table class="res"><tr><th>account_number</th><th>balance</th></tr><tr><td>50010000001003</td><td>500000.00</td></tr><tr><td>50010000003001</td><td>445438.88</td></tr></table><span class="tag" style="margin-top:12px">CORRELATED SUBQUERY — customers without a loan</span><pre class="sql">SELECT full_name FROM customer c
+WHERE NOT EXISTS (SELECT 1 FROM loan l WHERE l.customer_id=c.customer_id) LIMIT 4;</pre><table class="res"><tr><th>full_name</th></tr><tr><td>Divya Menon</td></tr><tr><td>Lakshmi Devi</td></tr><tr><td>Mohammed Imran</td></tr><tr><td>Priya Sharma</td></tr></table></div></div></section>
+<section class="slide" id="s12"><div class="slide-index">12 / 16</div><div class="slide-head"><h2 class="slide-title">Queries — Aggregation &amp; Branch Summary View</h2></div><div class="grid2"><div><span class="tag">AGGREGATION — monthly deposits vs withdrawals</span><pre class="sql">SELECT DATE_FORMAT(transaction_date,&#x27;%Y-%m&#x27;) AS month,
+ SUM(CASE WHEN transaction_type=&#x27;DEPOSIT&#x27; THEN amount END) AS deposits,
+ SUM(CASE WHEN transaction_type=&#x27;WITHDRAWAL&#x27; THEN amount END) AS withdrawals,
+ COUNT(*) AS txns
+FROM `transaction` GROUP BY month ORDER BY month;</pre><table class="res"><tr><th>month</th><th>deposits</th><th>withdrawals</th><th>txns</th></tr><tr><td>2026-06</td><td>—</td><td>—</td><td>1</td></tr><tr><td>2026-07</td><td>1140000.00</td><td>85000.00</td><td>22</td></tr><tr><td>2026-08</td><td>75000.00</td><td>44000.00</td><td>17</td></tr><tr><td>2026-09</td><td>146000.00</td><td>—</td><td>13</td></tr><tr><td>2026-10</td><td>—</td><td>—</td><td>1</td></tr></table></div><div><span class="tag">VIEW — v_branch_summary</span><pre class="sql">SELECT * FROM v_branch_summary;</pre><table class="res"><tr><th>branch_id</th><th>branch_name</th><th>city</th><th>accounts</th><th>total_deposits</th><th>avg_balance</th><th>inactive_accounts</th></tr><tr><td>1</td><td>Hanamkonda Main</td><td>Hanamkonda</td><td>4</td><td>683921.22</td><td>170980.31</td><td>1</td></tr><tr><td>2</td><td>Warangal Fort</td><td>Warangal</td><td>3</td><td>106941.00</td><td>35647.00</td><td>1</td></tr><tr><td>3</td><td>Hyderabad Banjara</td><td>Hyderabad</td><td>2</td><td>543438.88</td><td>271719.44</td><td>0</td></tr><tr><td>4</td><td>Karimnagar Town</td><td>Karimnagar</td><td>2</td><td>239624.28</td><td>119812.14</td><td>0</td></tr></table><span class="tag" style="margin-top:12px">VIEW — v_account_balances (top 4)</span><table class="res"><tr><th>account_number</th><th>type_name</th><th>branch_name</th><th>status</th><th>balance</th></tr><tr><td>50010000001003</td><td>Fixed Deposit</td><td>Hanamkonda Main</td><td>ACTIVE</td><td>500000.00</td></tr><tr><td>50010000003001</td><td>Current</td><td>Hyderabad Banjara</td><td>ACTIVE</td><td>445438.88</td></tr><tr><td>50010000004002</td><td>Savings</td><td>Karimnagar Town</td><td>ACTIVE</td><td>150624.28</td></tr><tr><td>50010000001001</td><td>Savings</td><td>Hanamkonda Main</td><td>ACTIVE</td><td>110157.22</td></tr></table></div></div></section>
+<section class="slide" id="s13"><div class="slide-index">13 / 16</div><div class="slide-head"><h2 class="slide-title">Views — Transfers, Loan Outstanding &amp; Repayments</h2></div><span class="tag">v_transfers — each transfer is balanced (debited = credited)</span><table class="res"><tr><th>transfer_id</th><th>transaction_date</th><th>from_account</th><th>to_account</th><th>debited</th><th>credited</th><th>balanced</th></tr><tr><td>1</td><td>2026-07-20 10:00:00</td><td>50010000001001</td><td>50010000001002</td><td>5000.00</td><td>5000.00</td><td>1</td></tr><tr><td>2</td><td>2026-07-25 14:30:00</td><td>50010000001002</td><td>50010000002001</td><td>7500.00</td><td>7500.00</td><td>1</td></tr><tr><td>3</td><td>2026-08-02 11:00:00</td><td>50010000003001</td><td>50010000002002</td><td>20000.00</td><td>20000.00</td><td>1</td></tr><tr><td>4</td><td>2026-08-14 16:10:00</td><td>50010000003002</td><td>50010000001001</td><td>6000.00</td><td>6000.00</td><td>1</td></tr><tr><td>5</td><td>2026-08-22 12:45:00</td><td>50010000002001</td><td>50010000004002</td><td>3000.00</td><td>3000.00</td><td>1</td></tr></table><span class="tag" style="margin-top:12px">v_loan_outstanding — principal, EMI total, repaid, outstanding</span><table class="res"><tr><th>loan_id</th><th>full_name</th><th>loan_type</th><th>principal</th><th>interest_rate</th><th>total_payable</th><th>total_repaid</th><th>outstanding</th><th>status</th></tr><tr><td>1</td><td>Ananya Reddy</td><td>PERSONAL</td><td>60000.00</td><td>12.00</td><td>61811.95</td><td>24724.78</td><td>37087.17</td><td>ACTIVE</td></tr><tr><td>2</td><td>Arjun Naidu</td><td>VEHICLE</td><td>300000.00</td><td>9.00</td><td>313668.08</td><td>114061.12</td><td>199606.96</td><td>ACTIVE</td></tr><tr><td>3</td><td>Karthik Goud</td><td>EDUCATION</td><td>150000.00</td><td>8.00</td><td>156066.46</td><td>28375.72</td><td>127690.74</td><td>ACTIVE</td></tr></table><span class="tag" style="margin-top:12px">v_repayment_history (sample)</span><table class="res"><tr><th>loan_id</th><th>full_name</th><th>due_date</th><th>due_amount</th><th>paid_on</th><th>paid_amount</th><th>instalment_status</th></tr><tr><td>1</td><td>Ananya Reddy</td><td>2026-08-01</td><td>12362.39</td><td>2026-08-01 10:00:00</td><td>12362.39</td><td>PAID</td></tr><tr><td>1</td><td>Ananya Reddy</td><td>2026-09-01</td><td>12362.39</td><td>2026-09-01 10:00:00</td><td>12362.39</td><td>PAID</td></tr><tr><td>2</td><td>Arjun Naidu</td><td>2026-07-01</td><td>28515.28</td><td>2026-07-01 09:00:00</td><td>28515.28</td><td>PAID</td></tr><tr><td>2</td><td>Arjun Naidu</td><td>2026-08-01</td><td>28515.28</td><td>2026-08-01 09:00:00</td><td>28515.28</td><td>PAID</td></tr></table></section>
+<section class="slide" id="s14"><div class="slide-index">14 / 16</div><div class="slide-head"><h2 class="slide-title">Integrity Tests — Invalid Operations Are Rejected</h2></div><div class="grid2"><div><div class="err"><code>INSERT INTO `transaction` (account_id, transaction_type, amount) VALUES (1,&#x27;DEPOSIT&#x27;,-500);</code><em>ERROR: Transaction amount must be positive</em></div><div class="err"><code>INSERT … (5,&#x27;WITHDRAWAL&#x27;,9999999);  -- exceeds balance</code><em>ERROR: Insufficient balance (minimum balance rule)</em></div><div class="err"><code>INSERT … (9,&#x27;DEPOSIT&#x27;,1000);  -- FROZEN account</code><em>ERROR: Account is not ACTIVE - transaction rejected</em></div><div class="err"><code>INSERT … (11,&#x27;DEPOSIT&#x27;,1000);  -- CLOSED account</code><em>ERROR: Account is not ACTIVE - transaction rejected</em></div></div><div><div class="err"><code>CALL sp_transfer(1, 1, 100, …);  -- same account</code><em>ERROR: Cannot transfer to the same account</em></div><div class="err"><code>CALL sp_transfer(5, 2, 99999999, …);  -- too large; both legs rolled back</code><em>ERROR: Insufficient balance (minimum balance rule)</em></div><div class="err"><code>INSERT INTO account (account_number, …) VALUES (&#x27;50010000001001&#x27;, …);</code><em>ERROR: Duplicate entry &#x27;50010000001001&#x27; for key &#x27;account_number&#x27;</em></div><p class="note">Messages are the actual output of tests_review2.sql. Account balances were unchanged after every rejected statement.</p></div></div></section>
+<section class="slide" id="s15"><div class="slide-index">15 / 16</div><div class="slide-head"><h2 class="slide-title">Database Prototype Demonstration</h2></div>
+<div class="grid2"><div><p class="slide-kicker">Live demo flow</p>
+<ul class="bullets"><li>Run <strong>bank_review2.sql</strong> — creates bank_db, tables, triggers, procedures, data and views.</li>
+<li>Show <strong>v_account_balances</strong> and an account statement with running balance.</li>
+<li>Call <strong>sp_transfer</strong> and show both ledger legs with matching amounts.</li>
+<li>Attempt an overdraw and a posting to a frozen account — both rejected.</li>
+<li>Show <strong>v_loan_outstanding</strong> before and after a repayment.</li></ul></div>
+<div><p class="slide-kicker">Next — Review 3</p>
+<ul class="bullets"><li>Front-end application (Java / Python) connected to this database.</li>
+<li>Forms for customers, accounts, deposits, withdrawals, transfers and loans.</li>
+<li>Statements and branch reports using the existing views.</li>
+<li>Final report, test evidence and viva demonstration.</li></ul>
+<p class="note">Files: bank_review2.sql · queries_review2.sql · tests_review2.sql</p></div></div></section>
+<section class="slide" id="sEND" style="align-items:center;justify-content:center;text-align:center"><div class="slide-index">16 / 16</div><h1 style="font-family:var(--serif);font-weight:600;font-size:56px;margin:0 0 14px">Thank You</h1><div style="width:56px;height:2.5px;background:var(--pink);margin:26px auto"></div><p style="font-size:17px;color:var(--muted);margin:0">Questions &amp; Technical Discussion</p><div style="margin-top:60px;font-size:12.5px;color:var(--muted)">Project 55 &nbsp;·&nbsp; Review 2</div></section>
+
+<div class="nav-zone left" onclick="go(-1)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+    </div>
+    <div class="nav-zone right" onclick="go(1)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+    </div>
+
+  </div>
+</div>
+
+<div class="bottom-bar">
+  <div class="dots" id="dots"></div>
+  <div class="bar-divider"></div>
+  <button class="fullscreen-btn" id="fsBtn" title="Toggle fullscreen" aria-label="Toggle fullscreen">
+    <svg class="icon-enter" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M8 3H5a2 2 0 0 0-2 2v3"></path>
+      <path d="M21 8V5a2 2 0 0 0-2-2h-3"></path>
+      <path d="M16 21h3a2 2 0 0 0 2-2v-3"></path>
+      <path d="M3 16v3a2 2 0 0 0 2 2h3"></path>
+    </svg>
+    <svg class="icon-exit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M8 3v3a2 2 0 0 1-2 2H3"></path>
+      <path d="M21 8h-3a2 2 0 0 1-2-2V3"></path>
+      <path d="M3 16h3a2 2 0 0 1 2 2v3"></path>
+      <path d="M16 21v-3a2 2 0 0 1 2-2h3"></path>
+    </svg>
+  </button>
+</div>
+<div class="hint" id="hint">Use &larr; &rarr; or click the edges to navigate</div>
+
+<script>
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const total = slides.length;
+  let current = 0;
+  let isAnimating = false;
+  const TRANSITION_MS = 720;
+  const EFFECTS = ['rise', 'wipe', 'zoom', 'flip', 'curtain'];
+
+  const dotsEl = document.getElementById('dots');
+  slides.forEach((_, i) => {
+    const b = document.createElement('button');
+    b.className = 'dot-btn' + (i === 0 ? ' active' : '');
+    b.addEventListener('click', () => showSlide(i));
+    dotsEl.appendChild(b);
+  });
+  const dotBtns = Array.from(dotsEl.children);
+
+  function showSlide(idx){
+    idx = Math.max(0, Math.min(total - 1, idx));
+    if(idx === current || isAnimating) return;
+
+    const oldIdx = current;
+    const newIdx = idx;
+    const forward = newIdx > oldIdx;
+    const pairIndex = Math.min(oldIdx, newIdx);
+    const effect = EFFECTS[pairIndex % EFFECTS.length];
+
+    const oldEl = slides[oldIdx];
+    const newEl = slides[newIdx];
+    const enterClass = `tr-${effect}-enter`;
+    const leaveClass = `tr-${effect}-leave`;
+
+    let oldClass, newClass, reverse;
+    if(forward){ oldClass = leaveClass; newClass = enterClass; reverse = false; }
+    else{ oldClass = enterClass; newClass = leaveClass; reverse = true; }
+
+    let oldZ = 1, newZ = 2;
+    if(effect === 'wipe' || effect === 'curtain'){
+      if(forward){ newZ = 3; oldZ = 1; }
+      else{ oldZ = 3; newZ = 1; }
+    }
+
+    isAnimating = true;
+    oldEl.style.zIndex = oldZ; newEl.style.zIndex = newZ;
+    oldEl.style.opacity = '1'; oldEl.style.pointerEvents = 'none';
+    newEl.style.opacity = '1'; newEl.style.pointerEvents = 'auto';
+
+    oldEl.classList.add(oldClass); if(reverse) oldEl.classList.add('reverse');
+    newEl.classList.add(newClass); if(reverse) newEl.classList.add('reverse');
+
+    dotBtns[current].classList.remove('active');
+    current = newIdx;
+    dotBtns[current].classList.add('active');
+
+    setTimeout(() => {
+      oldEl.classList.remove(oldClass, 'reverse');
+      newEl.classList.remove(newClass, 'reverse');
+      oldEl.style.zIndex = ''; newEl.style.zIndex = '';
+      oldEl.style.opacity = ''; oldEl.style.pointerEvents = '';
+      newEl.style.opacity = ''; newEl.style.pointerEvents = '';
+      oldEl.classList.remove('active');
+      newEl.classList.add('active');
+      isAnimating = false;
+    }, TRANSITION_MS);
+
+    const hint = document.getElementById('hint');
+    if(hint) hint.classList.add('hidden');
+  }
+  function go(delta){ showSlide(current + delta); }
+
+  document.addEventListener('keydown', (e) => {
+    if(['ArrowRight','ArrowDown',' '].includes(e.key)){ e.preventDefault(); go(1); }
+    if(['ArrowLeft','ArrowUp'].includes(e.key)){ e.preventDefault(); go(-1); }
+  });
+
+  // scale stage to fit viewport
+  const stage = document.getElementById('stage');
+  function fit(){
+    const scale = Math.min(window.innerWidth / 1280, window.innerHeight / 720) * 0.94;
+    stage.style.transform = `scale(${scale})`;
+  }
+  window.addEventListener('resize', fit);
+  fit();
+
+  setTimeout(() => {
+    const hint = document.getElementById('hint');
+    if(hint) hint.classList.add('hidden');
+  }, 4500);
+
+  // fullscreen toggle
+  const fsBtn = document.getElementById('fsBtn');
+  function isFullscreen(){
+    return !!(document.fullscreenElement || document.webkitFullscreenElement);
+  }
+  function updateFsIcon(){
+    fsBtn.classList.toggle('is-fullscreen', isFullscreen());
+  }
+  fsBtn.addEventListener('click', () => {
+    if(!isFullscreen()){
+      const el = document.documentElement;
+      (el.requestFullscreen || el.webkitRequestFullscreen)?.call(el);
+    } else {
+      (document.exitFullscreen || document.webkitExitFullscreen)?.call(document);
+    }
+  });
+  document.addEventListener('fullscreenchange', () => { updateFsIcon(); fit(); });
+  document.addEventListener('webkitfullscreenchange', () => { updateFsIcon(); fit(); });
+
+  document.addEventListener('keydown', (e) => {
+    if(e.key === 'f' || e.key === 'F'){ fsBtn.click(); }
+  });
+</script>
+
+</body>
+</html>
