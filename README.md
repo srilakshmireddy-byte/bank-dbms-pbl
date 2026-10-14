@@ -32,8 +32,8 @@ A relational database system in MySQL 8, normalized to 3NF, for managing bank cu
 | Working prototype | [`review-3/`](./review-3) |
 | Final report (PDF, DOCX) | [`report/Final_Report.pdf`](./report/Final_Report.pdf), [`report/Final_Report.docx`](./report/Final_Report.docx) |
 | Video link document | [`video/VIDEO_LINK.md`](./video/VIDEO_LINK.md) |
-| HackerRank profile report | [`hackerrank/`](./hackerrank) |
-| LeetCode profile report | [`leetcode/`](./leetcode) |
+| HackerRank profile report (DOCX + PDF) | [`hackerrank/HackerRank_Srilakshmi.docx`](./hackerrank/HackerRank_Srilakshmi.docx), [`hackerrank/HackerRank_Srilakshmi.pdf`](./hackerrank/HackerRank_Srilakshmi.pdf) |
+| LeetCode profile report (DOCX + PDF) | [`leetcode/LeetCode_Srilakshmi.docx`](./leetcode/LeetCode_Srilakshmi.docx), [`leetcode/LeetCode_Srilakshmi.pdf`](./leetcode/LeetCode_Srilakshmi.pdf) |
 
 ## ER diagram
 
