@@ -15,7 +15,7 @@ A relational database system in MySQL 8, normalized to 3NF, for managing bank cu
 | **Live demo** | [srilakshmireddy-byte.github.io/bank-dbms-pbl](https://srilakshmireddy-byte.github.io/bank-dbms-pbl/) (sample data runs in the browser) |
 | **Working prototype** | [`review-3/`](./review-3) |
 | **Final report** | [`report/Final_Report.pdf`](./report/Final_Report.pdf) |
-| **Video presentation (5 min)** | see [`video/VIDEO_LINK.md`](./video/VIDEO_LINK.md) |
+| **Video presentation (5 min)** | [Watch on Google Drive](https://drive.google.com/file/d/1-3OM974TpI189igGuD6Dg_FS39tufjrA/view?usp=sharing) |
 | **ER diagram** | [below](#er-diagram), and [`docs/er_diagram.png`](./docs/er_diagram.png) |
 
 ## Submission contents
