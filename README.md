@@ -34,6 +34,7 @@ A relational database system in MySQL 8, normalized to 3NF, for managing bank cu
 | Video link document | [`video/VIDEO_LINK.md`](./video/VIDEO_LINK.md) |
 | HackerRank profile report (DOCX + PDF) | [`hackerrank/HackerRank_Srilakshmi.docx`](./hackerrank/HackerRank_Srilakshmi.docx), [`hackerrank/HackerRank_Srilakshmi.pdf`](./hackerrank/HackerRank_Srilakshmi.pdf) |
 | LeetCode profile report (DOCX + PDF) | [`leetcode/LeetCode_Srilakshmi.docx`](./leetcode/LeetCode_Srilakshmi.docx), [`leetcode/LeetCode_Srilakshmi.pdf`](./leetcode/LeetCode_Srilakshmi.pdf) |
+| MOOC certificate (PDF) | [`mooc-certificate/MOOC_Certificate_Srilakshmi.pdf`](./mooc-certificate/MOOC_Certificate_Srilakshmi.pdf) |
 | Certificate: Introduction to the Fundamentals of Databases | [`certificates/Database_Fundamentals_Certificate.pdf`](./certificates/Database_Fundamentals_Certificate.pdf) |
 
 ## ER diagram
@@ -229,6 +230,7 @@ report/     final report (PDF and DOCX)
 video/      link to the 5-minute video presentation
 hackerrank/ HackerRank profile report
 leetcode/   LeetCode profile report
+mooc-certificate/  MOOC course certificate
 docs/       ER diagram
 .github/    GitHub Pages workflow that publishes the live demo
 ```
